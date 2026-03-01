@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>6寸相纸对半切</title>
+    <style>
+        :root {
+            --primary-color: #059669;
+            --primary-dark: #047857;
+            --primary-light: #10b981;
+            --secondary-color: #6366f1;
+            --danger-color: #ef4444;
+            --warning-color: #f59e0b;
+            --success-color: #10b981;
+            --border-color: #e5e7eb;
+            --text-primary: #1f2937;
+            --text-secondary: #6b7280;
+            --text-muted: #9ca3af;
+            --bg-primary: #f9fafb;
+            --bg-secondary: #f3f4f6;
+            --bg-card: #ffffff;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --radius-xl: 24px;
+            --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background: var(--bg-secondary);
+            min-height: 100vh;
+            padding: 20px;
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: var(--bg-card);
+            border-radius: var(--radius-xl);
+            padding: 32px;
+            box-shadow: var(--shadow-xl);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 32px;
+            padding-bottom: 24px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .header h1 {
+            color: var(--text-primary);
+            font-size: 1.875rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            letter-spacing: -0.025em;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 0.9375rem;
+            margin-bottom: 16px;
+        }
+
+        .spec-info {
+            background: linear-gradient(135deg, #ecfdf5, #d1fae5);
+            padding: 16px 20px;
+            border-radius: var(--radius-md);
+            border-left: 4px solid var(--primary-color);
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            text-align: left;
+        }
+
+        .spec-info strong {
+            color: var(--text-primary);
+        }
+
+        .upload-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin: 32px 0;
+        }
+
+        .upload-area {
+            border: 2px dashed var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 32px 24px;
+            text-align: center;
+            transition: all 0.25s ease;
+            background: var(--bg-primary);
+            position: relative;
+            aspect-ratio: 3/4;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            cursor: pointer;
+            overflow: hidden;
+        }
+
+        .upload-area:hover {
+            border-color: var(--primary-color);
+            background: #f0fdf4;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .upload-area.dragover {
+            border-color: var(--primary-color);
+            background: #ecfdf5;
+            border-style: solid;
+        }
+
+        .upload-area.has-image {
+            padding: 8px;
+            background: var(--bg-primary);
+            border-style: solid;
+            border-color: var(--primary-light);
+        }
+
+        .image-controls {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: rgba(31, 41, 55, 0.85);
+            backdrop-filter: blur(4px);
+            border-radius: var(--radius-sm);
+            padding: 4px;
+            display: none;
+            gap: 4px;
+            z-index: 10;
+        }
+
+        .upload-area.has-image .image-controls {
+            display: flex;
+        }
+
+        .control-btn {
+            background: transparent;
+            border: none;
+            color: white;
+            padding: 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+        }
+
+        .control-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .upload-progress {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.95);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-radius: var(--radius-lg);
+            z-index: 10;
+        }
+
+        .upload-progress.active {
+            display: flex;
+        }
+
+        .progress-bar {
+            width: 60%;
+            height: 6px;
+            background: #e5e7eb;
+            border-radius: 3px;
+            overflow: hidden;
+            margin-top: 12px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary-color), var(--primary-light));
+            width: 0%;
+            transition: width 0.2s ease;
+        }
+
+        .auto-rotate-hint {
+            position: absolute;
+            bottom: 12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--primary-color);
+            color: white;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.8125rem;
+            font-weight: 500;
+            display: none;
+            z-index: 5;
+            box-shadow: var(--shadow-md);
+        }
+
+        .upload-area.has-image .auto-rotate-hint {
+            display: block;
+        }
+
+        .upload-icon {
+            font-size: 3rem;
+            margin-bottom: 12px;
+            opacity: 0.8;
+        }
+
+        .upload-text {
+            color: var(--text-secondary);
+            font-size: 0.9375rem;
+            margin-bottom: 16px;
+        }
+
+        .upload-text span {
+            display: block;
+            font-size: 0.8125rem;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .upload-btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 28px;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            font-size: 0.9375rem;
+            font-weight: 500;
+            transition: all 0.25s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .upload-btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3);
+        }
+
+        .preview-img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            border-radius: var(--radius-md);
+            transition: transform 0.3s ease;
+            background: var(--bg-primary);
+        }
+
+        .resolution-selector {
+            background: var(--bg-primary);
+            padding: 24px;
+            border-radius: var(--radius-lg);
+            margin-bottom: 28px;
+            border: 1px solid var(--border-color);
+        }
+
+        .resolution-selector h3 {
+            color: var(--text-primary);
+            margin-bottom: 16px;
+            font-size: 1rem;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .resolution-options {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .resolution-btn {
+            background: white;
+            border: 2px solid var(--border-color);
+            padding: 14px 24px;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: all 0.25s ease;
+            font-weight: 500;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            min-width: 110px;
+            text-align: center;
+        }
+
+        .resolution-btn:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+            transform: translateY(-2px);
+        }
+
+        .resolution-btn.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+            box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3);
+        }
+
+        .resolution-btn small {
+            display: block;
+            font-size: 0.75rem;
+            opacity: 0.8;
+            margin-top: 4px;
+            font-weight: 400;
+        }
+
+        .merge-btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 16px 48px;
+            border-radius: var(--radius-lg);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            display: block;
+            margin: 0 auto 28px;
+            min-width: 220px;
+            box-shadow: 0 4px 14px rgba(5, 150, 105, 0.4);
+        }
+
+        .merge-btn:hover:not(:disabled) {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(5, 150, 105, 0.4);
+        }
+
+        .merge-btn:disabled {
+            background: #d1d5db;
+            color: #9ca3af;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 32px;
+        }
+
+        .spinner {
+            border: 3px solid #e5e7eb;
+            border-top: 3px solid var(--primary-color);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 16px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .result-section {
+            text-align: center;
+            background: var(--bg-primary);
+            border-radius: var(--radius-lg);
+            padding: 28px;
+            border: 1px solid var(--border-color);
+        }
+
+        .preview-container {
+            max-width: 420px;
+            margin: 0 auto 24px;
+            background: white;
+            padding: 12px;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
+            overflow: hidden;
+        }
+
+        #resultCanvas {
+            width: 100%;
+            height: auto;
+            max-width: 100%;
+            border-radius: var(--radius-sm);
+            display: block;
+        }
+
+        .download-btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 14px 40px;
+            border-radius: var(--radius-lg);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            min-width: 200px;
+            box-shadow: 0 4px 14px rgba(5, 150, 105, 0.4);
+        }
+
+        .download-btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(5, 150, 105, 0.4);
+        }
+
+        .output-info {
+            background: linear-gradient(135deg, #ecfdf5, #d1fae5);
+            color: var(--text-primary);
+            padding: 16px 20px;
+            border-radius: var(--radius-md);
+            margin-top: 20px;
+            font-size: 0.875rem;
+            border: 1px solid #a7f3d0;
+        }
+
+        .output-info strong {
+            color: var(--primary-dark);
+        }
+
+        @media (max-width: 768px) {
+            .preview-container {
+                max-width: 100%;
+                margin: 0 0 20px 0;
+                padding: 8px;
+            }
+            
+            #resultCanvas {
+                max-height: 60vh;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .preview-container {
+                padding: 6px;
+            }
+            
+            #resultCanvas {
+                max-height: 50vh;
+            }
+            
+            .result-section {
+                padding: 16px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 24px 20px;
+                margin: 12px;
+                border-radius: var(--radius-lg);
+            }
+            
+            .upload-section {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+            
+            .resolution-options {
+                flex-direction: column;
+            }
+            
+            .resolution-btn {
+                width: 100%;
+            }
+            
+            .header h1 {
+                font-size: 1.5rem;
+            }
+            
+            .merge-btn, .download-btn {
+                width: 100%;
+                max-width: 100%;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 12px;
+            }
+            
+            .container {
+                padding: 20px 16px;
+                margin: 8px;
+            }
+            
+            .header {
+                margin-bottom: 24px;
+                padding-bottom: 20px;
+            }
+            
+            .header h1 {
+                font-size: 1.375rem;
+            }
+            
+            .upload-area {
+                padding: 24px 16px;
+            }
+            
+            .spec-info {
+                padding: 14px;
+                font-size: 0.8125rem;
+            }
+            
+            .upload-icon {
+                font-size: 2.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>6寸相纸对半切</h1>
+            <div class="subtitle">为【小米照片打印机1S】定制</div>
+            <div class="spec-info">
+                <strong>打印规格：</strong>6寸相纸 100mm × 148mm | 输出比例 25:37（完美打印）<br>
+                <strong>照片规格：</strong>每张照片按4:3比例显示，可旋转为3:4，细边框<br>
+                <strong>使用说明：</strong>打印后沿中间虚线裁剪，得到两张标准4:3比例照片
+            </div>
+        </div>
+
+        <div class="upload-section">
+            <div class="upload-area" id="upload1" role="button" aria-label="上传第一张照片" tabindex="0">
+                <div class="upload-progress" id="progress1">
+                    <div>上传中...</div>
+                    <div class="progress-bar"><div class="progress-fill" id="progressFill1"></div></div>
+                </div>
+                <div class="upload-icon">🖼️</div>
+                <div class="upload-text">
+                    上传第一张照片
+                    <span>（建议3:4比例）</span>
+                </div>
+                <button class="upload-btn" onclick="document.getElementById('file1').click()" aria-label="选择第一张照片">
+                    📁 选择照片
+                </button>
+                <input type="file" id="file1" class="file-input" accept="image/*" aria-label="第一张照片文件输入">
+                <img id="preview1" class="preview-img" style="display: none;" alt="第一张照片预览">
+                <div class="image-controls">
+                    <button class="control-btn" onclick="rotateImage(1)" title="旋转90°" aria-label="旋转第一张照片90度">🔄</button>
+                    <button class="control-btn" onclick="replaceImage(1)" title="重新选择" aria-label="重新选择第一张照片">📂</button>
+                </div>
+                <div class="auto-rotate-hint" id="rotateHint1"></div>
+            </div>
+            
+            <div class="upload-area" id="upload2" role="button" aria-label="上传第二张照片" tabindex="0">
+                <div class="upload-progress" id="progress2">
+                    <div>上传中...</div>
+                    <div class="progress-bar"><div class="progress-fill" id="progressFill2"></div></div>
+                </div>
+                <div class="upload-icon">🖼️</div>
+                <div class="upload-text">
+                    上传第二张照片
+                    <span>（建议3:4比例）</span>
+                </div>
+                <button class="upload-btn" onclick="document.getElementById('file2').click()" aria-label="选择第二张照片">
+                    📁 选择照片
+                </button>
+                <input type="file" id="file2" class="file-input" accept="image/*" aria-label="第二张照片文件输入">
+                <img id="preview2" class="preview-img" style="display: none;" alt="第二张照片预览">
+                <div class="image-controls">
+                    <button class="control-btn" onclick="rotateImage(2)" title="旋转90°" aria-label="旋转第二张照片90度">🔄</button>
+                    <button class="control-btn" onclick="replaceImage(2)" title="重新选择" aria-label="重新选择第二张照片">📂</button>
+                </div>
+                <div class="auto-rotate-hint" id="rotateHint2"></div>
+            </div>
+        </div>
+
+        <div class="resolution-selector">
+            <h3>选择输出分辨率</h3>
+            <div class="resolution-options">
+                <button class="resolution-btn active" data-resolution="2k">2K高清<small>1440×2160</small></button>
+                <button class="resolution-btn" data-resolution="4k">4K超清<small>2880×4320</small></button>
+                <button class="resolution-btn" data-resolution="print">打印优化<small>1800×2700</small></button>
+            </div>
+        </div>
+
+        <button class="merge-btn" id="mergeBtn" onclick="mergeImages()" disabled="">
+            ✨ 生成相纸模板
+        </button>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <div>正在生成高清相纸模板...</div>
+        </div>
+
+        <div class="result-section" id="resultSection" style="display: none;">
+            <div class="preview-container">
+                <canvas id="resultCanvas"></canvas>
+            </div>
+            <button class="download-btn" onclick="downloadImage()">
+                💾 下载相纸模板
+            </button>
+            <div class="output-info" id="outputInfo">
+                <strong>✨ 相纸模板生成完成</strong><br>
+                <span id="resolutionInfo"></span><br>
+                适合6寸相纸打印，中间裁剪线位置完美分割
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let image1 = null;
+        let image2 = null;
+        let rotation1 = 0;
+        let rotation2 = 0;
+        let selectedResolution = '2k';
+
+        const resolutionSettings = {
+            '2k': { width: 1500, height: 2220, name: '2K高清' },
+            '4k': { width: 3000, height: 4440, name: '4K超清' },
+            'print': { width: 1875, height: 2775, name: '打印优化' }
+        };
+
+        document.addEventListener('DOMContentLoaded', function() {
+            setupEventListeners();
+        });
+
+        function setupEventListeners() {
+            document.getElementById('file1').addEventListener('change', (e) => handleFileSelect(e, 1));
+            document.getElementById('file2').addEventListener('change', (e) => handleFileSelect(e, 2));
+
+            setupDragAndDrop('upload1', 1);
+            setupDragAndDrop('upload2', 2);
+
+            ['upload1', 'upload2'].forEach((id, index) => {
+                const el = document.getElementById(id);
+                el.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        document.getElementById(`file${index + 1}`).click();
+                    }
+                });
+            });
+
+            document.querySelectorAll('.resolution-btn').forEach(btn => {
+                btn.addEventListener('click', () => selectResolution(btn.dataset.resolution));
+            });
+        }
+
+        function setupDragAndDrop(elementId, imageNumber) {
+            const element = document.getElementById(elementId);
+            
+            element.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                element.classList.add('dragover');
+            });
+            
+            element.addEventListener('dragleave', () => {
+                element.classList.remove('dragover');
+            });
+            
+            element.addEventListener('drop', (e) => {
+                e.preventDefault();
+                element.classList.remove('dragover');
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    handleFile(files[0], imageNumber);
+                }
+            });
+        }
+
+        function handleFileSelect(event, imageNumber) {
+            const file = event.target.files[0];
+            if (file) {
+                handleFile(file, imageNumber);
+            }
+        }
+
+        function handleFile(file, imageNumber) {
+            if (!file.type.startsWith('image/')) {
+                alert('请选择图片文件！');
+                return;
+            }
+
+            const uploadArea = document.getElementById(`upload${imageNumber}`);
+            const progressEl = document.getElementById(`progress${imageNumber}`);
+            const progressFill = document.getElementById(`progressFill${imageNumber}`);
+            
+            progressEl.classList.add('active');
+            progressFill.style.width = '0%';
+
+            let progress = 0;
+            const progressInterval = setInterval(() => {
+                progress += 10;
+                if (progress < 90) {
+                    progressFill.style.width = progress + '%';
+                }
+            }, 50);
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    clearInterval(progressInterval);
+                    progressFill.style.width = '100%';
+                    
+                    setTimeout(() => {
+                        progressEl.classList.remove('active');
+                    }, 200);
+
+                    const preview = document.getElementById(`preview${imageNumber}`);
+                    const rotateHint = document.getElementById(`rotateHint${imageNumber}`);
+                    
+                    let autoRotated = false;
+                    if (imageNumber === 1) {
+                        image1 = img;
+                        rotation1 = 0;
+                        if (img.height > img.width) {
+                            rotation1 = 90;
+                            autoRotated = true;
+                        }
+                    } else {
+                        image2 = img;
+                        rotation2 = 0;
+                        if (img.height > img.width) {
+                            rotation2 = 90;
+                            autoRotated = true;
+                        }
+                    }
+                    
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                    
+                    if (autoRotated) {
+                        preview.style.transform = 'rotate(90deg)';
+                        rotateHint.textContent = '✓ 已自动旋转';
+                    } else {
+                        preview.style.transform = 'rotate(0deg)';
+                        rotateHint.textContent = '';
+                    }
+                    
+                    uploadArea.classList.add('has-image');
+                    
+                    uploadArea.querySelector('.upload-icon').style.display = 'none';
+                    uploadArea.querySelector('.upload-text').style.display = 'none';
+                    uploadArea.querySelector('.upload-btn').style.display = 'none';
+                    
+                    updateMergeButton();
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function selectResolution(resolution) {
+            selectedResolution = resolution;
+            document.querySelectorAll('.resolution-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`[data-resolution="${resolution}"]`).classList.add('active');
+        }
+
+        function rotateImage(imageNumber) {
+            if (imageNumber === 1) {
+                rotation1 = (rotation1 + 90) % 360;
+                updatePreviewRotation(1, rotation1);
+            } else {
+                rotation2 = (rotation2 + 90) % 360;
+                updatePreviewRotation(2, rotation2);
+            }
+        }
+
+        function updatePreviewRotation(imageNumber, rotation) {
+            const preview = document.getElementById(`preview${imageNumber}`);
+            preview.style.transform = `rotate(${rotation}deg)`;
+        }
+
+        function replaceImage(imageNumber) {
+            if (imageNumber === 1) {
+                rotation1 = 0;
+            } else {
+                rotation2 = 0;
+            }
+            
+            const preview = document.getElementById(`preview${imageNumber}`);
+            preview.style.transform = 'rotate(0deg)';
+            
+            document.getElementById(`file${imageNumber}`).click();
+        }
+
+        function updateMergeButton() {
+            const mergeBtn = document.getElementById('mergeBtn');
+            if (image1 && image2) {
+                mergeBtn.disabled = false;
+                mergeBtn.textContent = '✨ 生成相纸模板';
+            } else {
+                mergeBtn.disabled = true;
+                mergeBtn.textContent = '请先上传两张照片';
+            }
+        }
+
+        function mergeImages() {
+            if (!image1 || !image2) {
+                alert('请先上传两张图片！');
+                return;
+            }
+
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('resultSection').style.display = 'none';
+
+            setTimeout(() => {
+                processImages();
+            }, 100);
+        }
+
+        function processImages() {
+            const canvas = document.getElementById('resultCanvas');
+            const ctx = canvas.getContext('2d');
+            
+            const settings = resolutionSettings[selectedResolution];
+            const canvasWidth = settings.width;
+            const canvasHeight = settings.height;
+            
+            const outerMargin = Math.floor(canvasHeight * 0.014);
+            const innerMargin = outerMargin * 2;
+            
+            const availableHeight = Math.floor((canvasHeight - outerMargin * 2 - innerMargin) / 2);
+            const availableWidth = canvasWidth - outerMargin * 2;
+            
+            canvas.width = canvasWidth;
+            canvas.height = canvasHeight;
+
+            const isMobile = window.innerWidth <= 768;
+            const containerWidth = isMobile ? window.innerWidth - 60 : 380;
+            const displayRatio = Math.min(containerWidth / canvasWidth, (isMobile ? window.innerHeight * 0.6 : 570) / canvasHeight);
+            
+            canvas.style.width = Math.floor(canvasWidth * displayRatio) + 'px';
+            canvas.style.height = Math.floor(canvasHeight * displayRatio) + 'px';
+
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = 'high';
+
+            drawImageInSpace(ctx, image1, outerMargin, outerMargin, availableWidth, availableHeight, rotation1);
+            drawImageInSpace(ctx, image2, outerMargin, outerMargin + availableHeight + innerMargin, availableWidth, availableHeight, rotation2);
+
+            drawCutLine(ctx, canvasWidth, canvasHeight, outerMargin + availableHeight + innerMargin/2);
+
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('resultSection').style.display = 'block';
+            document.getElementById('resolutionInfo').textContent = 
+                `分辨率: ${settings.width}×${settings.height} (${settings.name})`;
+        }
+
+        function drawImageInSpace(ctx, image, x, y, width, height, rotation) {
+            ctx.save();
+            
+            const photoPadding = 0.5;
+            const photoX = x + photoPadding;
+            const photoY = y + photoPadding;
+            const photoWidth = width - photoPadding * 2;
+            const photoHeight = height - photoPadding * 2;
+            
+            let finalPhotoWidth, finalPhotoHeight;
+            const targetRatio = 4 / 3;
+            
+            if (photoWidth / photoHeight > targetRatio) {
+                finalPhotoHeight = photoHeight;
+                finalPhotoWidth = photoHeight * targetRatio;
+            } else {
+                finalPhotoWidth = photoWidth;
+                finalPhotoHeight = finalPhotoWidth / targetRatio;
+            }
+            
+            const finalPhotoX = photoX + (photoWidth - finalPhotoWidth) / 2;
+            const finalPhotoY = photoY + (photoHeight - finalPhotoHeight) / 2;
+            
+            ctx.beginPath();
+            ctx.rect(finalPhotoX, finalPhotoY, finalPhotoWidth, finalPhotoHeight);
+            ctx.clip();
+            
+            const centerX = finalPhotoX + finalPhotoWidth / 2;
+            const centerY = finalPhotoY + finalPhotoHeight / 2;
+            ctx.translate(centerX, centerY);
+            
+            ctx.rotate(rotation * Math.PI / 180);
+            
+            let imgWidth = image.width;
+            let imgHeight = image.height;
+            
+            let scale;
+            if (rotation % 180 === 0) {
+                scale = Math.max(finalPhotoWidth / imgWidth, finalPhotoHeight / imgHeight);
+            } else {
+                scale = Math.max(finalPhotoWidth / imgHeight, finalPhotoHeight / imgWidth);
+            }
+            
+            const drawWidth = imgWidth * scale;
+            const drawHeight = imgHeight * scale;
+            
+            ctx.drawImage(image, -drawWidth/2, -drawHeight/2, drawWidth, drawHeight);
+            
+            ctx.restore();
+        }
+
+        function drawCutLine(ctx, canvasWidth, canvasHeight, y) {
+            ctx.save();
+            ctx.strokeStyle = '#cccccc';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([12, 8]);
+            ctx.globalAlpha = 0.8;
+            ctx.beginPath();
+            ctx.moveTo(canvasWidth * 0.1, y);
+            ctx.lineTo(canvasWidth * 0.9, y);
+            ctx.stroke();
+            ctx.restore();
+        }
+
+        function downloadImage() {
+            const canvas = document.getElementById('resultCanvas');
+            const settings = resolutionSettings[selectedResolution];
+            
+            canvas.toBlob(function(blob) {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `相纸模板_${settings.name}_${settings.width}x${settings.height}.png`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }, 'image/png', 1.0);
+        }
+    </script>
+</body>
+</html>
